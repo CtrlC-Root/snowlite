@@ -1,0 +1,30 @@
+#!/usr/bin/env python
+
+def options(ctx):
+    """Configure command line options."""
+
+    # microcontroller
+    ctx.add_option("--mcu", dest="mcu", default="attiny85", help="target microcontroller")
+
+def configure(ctx):
+    """Configure the project."""
+
+    # options
+    ctx.env.MCU = ctx.options.mcu
+    ctx.env.MCU_HZ = 1 * 1000 * 1000 # default 1MHz
+
+    # # XXX make MCU_HZ an option but what about fuses?
+    # https://electronics.stackexchange.com/a/32958
+
+    # programs
+    ctx.find_program("avr-gcc", var="CC")
+    ctx.find_program("avr-objcopy", var="OBJCOPY")
+
+    # recurse
+    ctx.recurse("src")
+
+def build(ctx):
+    """Build the project."""
+
+    # recurse
+    ctx.recurse("src")

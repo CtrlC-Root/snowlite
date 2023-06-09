@@ -1,0 +1,29 @@
+#!/usr/bin/env python
+
+def configure(ctx):
+    """Configure the project."""
+
+    define_cpu_freq = "-DF_CPU={}UL".format(ctx.env.MCU_HZ)
+    flag_mcu = "-mmcu={}".format(ctx.env.MCU)
+
+    ctx.env.append_value("CFLAGS", ["-Os", flag_mcu, define_cpu_freq])
+    ctx.env.append_value("LFLAGS", [flag_mcu])
+
+def build(ctx):
+    """Build the project."""
+
+    # compile
+    ctx(rule="${CC} -c -o ${TGT} ${CFLAGS} ${SRC}", target="board.o", source="board.c")
+    ctx(rule="${CC} -c -o ${TGT} ${CFLAGS} ${SRC}", target="light.o", source="light.c")
+    ctx(rule="${CC} -c -o ${TGT} ${CFLAGS} ${SRC}", target="music.o", source="music.c")
+    ctx(rule="${CC} -c -o ${TGT} ${CFLAGS} ${SRC}", target="snowlite.o", source="snowlite.c")
+
+    # link
+    ctx(
+        rule="${CC} -o ${TGT} ${LFLAGS} ${SRC}",
+        target="snowlite",
+        source=["snowlite.o", "music.o", "light.o", "board.o"])
+
+    # prepare
+    ctx(rule="${OBJCOPY} -O ihex -R .eeprom ${SRC} ${TGT}", source="snowlite", target="snowlite.hex")
+    ctx(rule="${OBJCOPY} -j .eeprom --set-section-flags=.eeprom=\"alloc,load\" -O ihex ${SRC} ${TGT}", source="snowlite", target="snowlite.eep")
